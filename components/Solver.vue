@@ -1,16 +1,14 @@
 <template>
   <div>
-      <Interpreter />
+    <Controls />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'IndexPage',
+  name: 'Solver',
   data() {
-    return {
-      showInterpreter: true
-    };
   }
 }
 </script>
+

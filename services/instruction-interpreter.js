@@ -1,8 +1,9 @@
 export default class InstructionInterpreter {
-  checkCleanedPatches(robot, dirtPatches, instructions) {
+  getCleaningSummary(robot, dirtPatches, instructions) {
     const patchMapping = dirtPatches.reduce((acc, patch) => ({...acc, [`${patch.x}-${patch.y}`]: patch}), {});
     let cursor = {x: robot.x, y: robot.y};
     let cleanedPatches = 0;
+    let steps = {[`${cursor.x}-${cursor.y}`]: cursor};
     Array.from(instructions).forEach((direction) => {
       switch(direction) {
         case "N":
@@ -18,14 +19,17 @@ export default class InstructionInterpreter {
           cursor.x -= 1;
           break;
       }
-      if (patchMapping[`${cursor.x}-${cursor.y}`]) {
+      let cursorKey = `${cursor.x}-${cursor.y}`;
+      steps[cursorKey] = cursor;
+      if (patchMapping[cursorKey]) {
         cleanedPatches += 1;
       }
     });
 
     return {
       coords: cursor,
-      patches: cleanedPatches
+      patches: cleanedPatches,
+      steps
     };
   }
 }
