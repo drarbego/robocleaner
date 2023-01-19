@@ -4,7 +4,8 @@ export default class PathFinder {
     this.ySize = ySize;
   }
 
-  find(robot, dirtPatches) {
+  find(robot, patches) {
+    let dirtPatches = [...patches];
     let path = [];
     let cursor = {x: robot.x, y: robot.y};
     while(dirtPatches.length > 0) {

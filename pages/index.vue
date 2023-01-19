@@ -1,7 +1,5 @@
 <template>
-  <div>
-      <Interpreter />
-  </div>
+  <Main />
 </template>
 
 <script>

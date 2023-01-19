@@ -25,6 +25,7 @@
       Instructions: <input v-model="instructions">
     </div>
     <button @click="getCleaningSummary">Get cleaning summary</button>
+    <button @click="findPath">Find path</button>
     <Display
         :dimensions="gridSize"
         :robotStart="robotStart"
@@ -41,9 +42,10 @@
 
 <script>
 import InstructionInterpreter from '../services/instruction-interpreter'
+import PathFinder from '../services/path-finding'
 
 export default {
-  name: 'Interpreter',
+  name: 'Main',
   data() {
     return {
       gridSize: {x: 5, y: 5},
@@ -79,6 +81,12 @@ export default {
       this.robotEnd = result.coords;
       this.totalCleanedPatches = result.patches;
       this.displaySummary = true;
+    },
+
+    findPath() {
+      let finder = new PathFinder(this.xSize, this.ySize);
+      let result = finder.find(this.robotStart, this.patches);
+      this.instructions = result.join("");
     },
 
     addPatch() {
