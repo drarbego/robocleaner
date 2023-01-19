@@ -3,7 +3,7 @@ export default class InstructionInterpreter {
     const patchMapping = dirtPatches.reduce((acc, patch) => ({...acc, [`${patch.x}-${patch.y}`]: patch}), {});
     let cursor = {x: robot.x, y: robot.y};
     let cleanedPatches = 0;
-    let steps = {[`${cursor.x}-${cursor.y}`]: cursor};
+    let steps = [{...cursor}];
     Array.from(instructions).forEach((direction) => {
       switch(direction) {
         case "N":
@@ -19,13 +19,10 @@ export default class InstructionInterpreter {
           cursor.x -= 1;
           break;
       }
+      steps.push({...cursor});
       let cursorKey = `${cursor.x}-${cursor.y}`;
-      steps[cursorKey] = cursor;
       if (patchMapping[cursorKey]) {
-        cleanedPatches += 1;
-      }
-    });
-
+        cleanedPatches += 1; } });
     return {
       coords: cursor,
       patches: cleanedPatches,

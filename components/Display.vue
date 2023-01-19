@@ -1,7 +1,7 @@
 <template>
   <div class="grid-container">
       <div v-for="(_j, j) in dimensions.y" class="grid-column">
-        <div v-for="(_i, i) in dimensions.x" class="grid-row" :class="{ cleaned: isCleaned(i, j)}">
+        <div v-for="(_i, i) in dimensions.x" class="grid-row" :class="{ cleaned: getEmoji(i, j) == '🧹'}">
           {{getEmoji(i, j)}}
         </div>
       </div>
@@ -32,7 +32,6 @@
 </style>
 
 <script>
-// TODO this component should only display the received data
 export default {
   name: 'Display',
   props: {
@@ -42,57 +41,51 @@ export default {
         return {x: 0, y: 0};
       }
     },
-    initRobotPos: {
+    robotStart: {
       type: Object,
       default() {
         return {x: 0, y: 0};
       }
     },
-    finalCoords: {
+    robotEnd: {
       type: Object,
       default() {
-        return {};
+        return {x: 0, y: 0};
       }
     },
     patches: {
       type: Array,
       required: true
     },
-    steps: {
-      type: Object,
+    cleanedCells: {
+      type: Array,
       required: true
     }
   },
   computed: {
-    mappedPatches() {
-      return this.patches.reduce(
-          (acc, patch) => ({...acc, [`${patch.x}-${patch.y}`]: patch}),
-          {}
+    mappedCellContent() {
+      let cellContent = {};
+      cellContent = this.patches.reduce(
+          (acc, patch) => ({...acc, [this.getKey(patch.x, patch.y)]: "💩"}),
+          cellContent
       );
+      cellContent = this.cleanedCells.reduce(
+          (acc, cell) => ({...acc, [this.getKey(cell.x, cell.y)]: "🧹"}),
+          cellContent
+      );
+      cellContent[this.getKey(this.robotEnd.x, this.robotEnd.y)] = "end 🤖";
+      cellContent[this.getKey(this.robotStart.x, this.robotStart.y)] = "start 🤖";
+
+      return cellContent;
     }
   },
   methods: {
+    getKey(x, y) {
+      return `${x}-${y}`;
+    },
     getEmoji(i, j) {
       j = this.translateY(j);
-
-      if (i === this.finalCoords.x && j === this.finalCoords.y) return "🤖";
-      if (
-          !this.finalCoords.x &&
-          i === this.initRobotPos.x &&
-          j === this.initRobotPos.y
-      ) return "🤖";
-
-      let coordKey = `${i}-${j}`;
-      if (this.steps[coordKey]) return "🧹";
-      if (this.mappedPatches[coordKey]) return "💩";
-
-      return "";
-    },
-
-    isCleaned(i, j) {
-      j = this.translateY(j);
-      if (!Object.keys(this.steps)) return false;
-      return Boolean(this.steps[`${i}-${j}`]);
+      return this.mappedCellContent[this.getKey(i, j)] || "";
     },
     translateY(y) {
       // the coordinate system starts from the bottom for Y

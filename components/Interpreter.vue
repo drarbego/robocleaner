@@ -2,13 +2,15 @@
   <div>
     <div>
       Room Dimensions
+      <br />
       X: <input v-model.number="gridSize.x" type="number">
       Y: <input v-model.number="gridSize.y" type="number">
     </div>
     <div>
       Robot Position
-      X: <input v-model.number="robot.x" type="number">
-      Y: <input v-model.number="robot.y" type="number">
+      <br />
+      X: <input v-model.number="robotStart.x" type="number">
+      Y: <input v-model.number="robotStart.y" type="number">
     </div>
     <div>
       <li v-for="(patch, index) in patches">
@@ -25,14 +27,15 @@
     <button @click="getCleaningSummary">Get cleaning summary</button>
     <Display
         :dimensions="gridSize"
-        :initRobotPos="robot"
+        :robotStart="robotStart"
+        :robotEnd="robotEnd"
         :patches="patches"
-        :steps="steps"
-        :finalCoords="finalCoords"
+        :cleanedCells="steps"
     />
-    {{finalCoords.x ? `Final coords: (${finalCoords.x}, ${finalCoords.y})` : ""}}
-    <br />
-    {{finalCoords.x ? `Cleaned patches: ${cleanedPatches}` : ""}}
+    <div v-if="displaySummary">
+      <p>Final robot position {{`(${robotEnd.x}, ${robotEnd.y})`}}</p>
+      <p>Total cleaned patches: {{totalCleanedPatches}}</p>
+    </div>
   </div>
 </template>
 
@@ -44,40 +47,26 @@ export default {
   data() {
     return {
       gridSize: {x: 5, y: 5},
-      robot: {x: 0, y: 0},
+      robotStart: {x: 0, y: 0},
+      robotEnd: {x: -1, y: -1},
       instructions: "",
       patches: [],
-      steps: {},
-      finalCoords: {},
-      cleanedPatches: 0
+      cleanedCells: [],
+      steps: [],
+      totalCleanedPatches: 0,
+      displaySummary: false
     };
   },
   watch: {
     gridSize: {
-        handler() {
-          this.steps = {};
-          this.finalCoords = {};
-        },
-        deep: true
-    },
-    robot: {
       handler() {
-        this.steps = {};
-        this.finalCoords = {};
+        this.resetState();
       },
       deep: true
     },
-    instructions: {
+    robotStart: {
       handler() {
-        this.steps = {};
-        this.finalCoords = {};
-      },
-      deep: true
-    },
-    patches: {
-      handler() {
-        this.steps = {};
-        this.finalCoords = {};
+        this.resetState();
       },
       deep: true
     }
@@ -85,11 +74,11 @@ export default {
   methods: {
     getCleaningSummary() {
       let interpreter = new InstructionInterpreter(this.xSize, this.ySize);
-      let result = interpreter.getCleaningSummary(this.robot, this.patches, this.instructions);
+      let result = interpreter.getCleaningSummary(this.robotStart, this.patches, this.instructions);
       this.steps = result.steps;
-      this.finalCoords = result.coords;
-      this.cleanedPatches = result.patches;
-      console.log(result);
+      this.robotEnd = result.coords;
+      this.totalCleanedPatches = result.patches;
+      this.displaySummary = true;
     },
 
     addPatch() {
@@ -98,6 +87,16 @@ export default {
 
     deletePatch(index) {
       this.patches.splice(index, 1);
+    },
+
+    resetState() {
+      this.robotEnd = {x: -1, y: -1};
+      this.instructions = "";
+      this.patches = [];
+      this.cleanedCells = [];
+      this.steps = [];
+      this.totalCleanedPatches = 0;
+      this.displaySummary = false;
     }
   }
 }
